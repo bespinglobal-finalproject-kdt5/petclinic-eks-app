@@ -1,0 +1,16 @@
+# Local build output and runtime credentials are not source.
+node_modules/
+dist/
+target/
+.angular/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.tfstate*
+*.tfvars*
+*.tfplan
+.terraform/
+.kube/
+.aws/
