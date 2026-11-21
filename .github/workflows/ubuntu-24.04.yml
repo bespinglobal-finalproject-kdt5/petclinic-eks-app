@@ -1,0 +1,42 @@
+name: Ubuntu 24.04 app checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NG_CLI_ANALYTICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: petclinic-angular/.nvmrc
+          cache: npm
+          cache-dependency-path: petclinic-angular/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: petclinic-rest/pom.xml
+      - name: Test Angular and build production assets
+        working-directory: petclinic-angular
+        run: |
+          npm ci
+          npm run test:ci
+          npm run build -- --configuration production
+          test -s dist/browser/index.html
+      - name: Test and package Spring REST
+        working-directory: petclinic-rest
+        run: ./mvnw -B -ntp package
+      - name: Verify Angular and REST together on loopback
+        run: bash scripts/smoke-local.sh

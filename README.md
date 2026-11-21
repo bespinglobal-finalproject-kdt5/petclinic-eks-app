@@ -4,7 +4,35 @@ Petclinic은 동물병원에서 **보호자, 반려동물, 방문 기록, 수의
 
 **배포 상태:** 이전 EKS·RDS 배포는 롤백했습니다. 이 저장소의 `main`에 push해도 AWS 리소스가 생성되거나 서비스가 재배포되지 않습니다. Terraform, Kubernetes 매니페스트, Dockerfile, Docker Compose, 운영 자격 증명은 포함하지 않습니다.
 
-## EKS 배포 기록
+## 앱 실행·빌드 기준: Ubuntu 24.04 LTS (x86_64)
+
+이 저장소에서 WEB은 **Node.js 24.x + npm**, WAS는 **JDK 21 + Maven Wrapper**로 실행합니다. [GitHub Actions](.github/workflows/ubuntu-24.04.yml)도 `ubuntu-24.04`로 고정했습니다. 앱 소스 검증용 CI이며 AWS 인증, 이미지 push, Terraform apply, EKS 배포는 하지 않습니다.
+
+아래는 처음 설정하는 Ubuntu 호스트에서 **저장소를 clone한 뒤 루트에서** 실행하는 예입니다. 이미 Node 24와 JDK 21이 설치되어 있다면 설치 단계는 건너뛰세요. Ubuntu 기본 `nodejs` 패키지만 설치하면 이 프로젝트가 요구하는 24.x가 아닐 수 있습니다.
+
+```bash
+sudo apt-get update
+sudo apt-get install -y openjdk-21-jdk git curl ca-certificates unzip python3
+# JDK가 여러 개 설치되어 있어도 이 셸에서는 Ubuntu의 JDK 21을 선택합니다.
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+
+# nvm이 없는 경우에만 사용자 홈에 설치합니다. 시스템 Node는 교체하지 않습니다.
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+  git clone --depth 1 --branch v0.40.3 https://github.com/nvm-sh/nvm.git "$NVM_DIR"
+fi
+. "$NVM_DIR/nvm.sh"
+(cd petclinic-angular && nvm install)
+nvm use 24
+node --version   # v24.x
+npm --version
+```
+
+**실행:** 아래 「처음 실행하기」처럼 터미널 두 개에서 REST와 WEB을 시작합니다. 새 셸에서 Node가 다른 버전이면 `. "$HOME/.nvm/nvm.sh"` 후 `nvm use 24`를 실행하세요. **연동 검사:** `npm ci`와 `./mvnw package`를 각각 앱 폴더에서 완료한 뒤, 서버가 떠 있지 않은 상태에서 저장소 루트의 `bash scripts/smoke-local.sh`를 실행합니다. [검사 스크립트](scripts/smoke-local.sh)는 두 앱을 로컬에서 기동하고, REST readiness와 Angular 프록시를 거친 H2 보호자 조회까지 확인한 뒤 종료합니다.
+
+## 과거 EKS 배포 기록 — 현재 Ubuntu 앱 기준과 별개
 
 **당시 구성은 비공개 EKS + IAM Access Entry + VPC CNI용 IRSA + `kubectl apply`였습니다. Helm은 사용하지 않았습니다.** 아래는 롤백 전에 사용한 구성입니다. 현재 실행 중인 클러스터나 이 앱 저장소만으로 재배포하는 절차를 뜻하지 않습니다. 로컬에서 앱만 실행할 때는 아래 **「처음 실행하기」**부터 보면 됩니다.
 
