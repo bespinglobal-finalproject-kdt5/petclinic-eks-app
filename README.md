@@ -198,6 +198,19 @@ export POSTGRES_PASS
 
 ## 5. 기존 소스에서 바뀐 부분
 
+**[앱 실행 설정만 줄 단위로 비교하기 — 8개 파일, +46 / −4](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/compare/b784e625df1c7b1d84cbe6a0de354f8c9e85f695...6e1ec93ed70e1100ddadbdae4878814040d5ff39)**
+
+첫 커밋에 이미 수정본이 들어 있었으므로, [검토 브랜치](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/tree/review/upstream-app-diff)에서 Angular 원본 `8a0e199`와 REST 원본 `0515ec8`을 기준으로 아래 diff를 재구성했습니다. 새로운 기능 변경이나 당시 작업 순서를 뜻하지 않으며 별도 병합은 필요 없습니다.
+
+| 변경 커밋 | 무엇을 보면 되나요? | 추가 / 삭제 |
+|---|---|---:|
+| [Angular 실행 설정](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/commit/7601a91fc918a6e6ab9d75ace65c5b1fb43dc5e7) | API 주소, 기본 화면 경로, 개발 프록시, Nginx SPA 설정 | +33 / −4 |
+| [Spring REST 실행 설정](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/commit/6e1ec93ed70e1100ddadbdae4878814040d5ff39) | 외부 PostgreSQL 프로필, readiness/liveness. Java 업무 로직 변경 없음 | +13 / −0 |
+| [Angular E2E 테스트](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/commit/bcb4280e53731aefa6eb86c9d0a2a9698754413e) | 경로 변경에 맞춘 모의 API와 화면 이동 검사 | +14 / −14 |
+| [하위 앱 README](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/commit/e773ab8911fa82e3c115c7a56700c6279368b611) | Angular·REST 실행 안내 | +9 / −91 |
+
+Ubuntu 24.04 CI와 연동 검사 스크립트는 위 합산에 포함되지 않습니다. 해당 변경은 [실제 CI 커밋](https://github.com/bespinglobal-finalproject-kdt5/petclinic-eks-app/commit/d13b9cf1f0007fc89abb2ac42e643193f2df9dc1)을 참고하세요.
+
 | 파일 | 변경 내용과 이유 |
 |---|---|
 | [Angular 개발 환경](petclinic-angular/src/environments/environment.ts) / [프로덕션 환경](petclinic-angular/src/environments/environment.prod.ts) | API 주소를 `http://localhost:9966/...` 대신 `/petclinic/api/`로 사용합니다. 배포된 화면이 방문자 PC의 `localhost`에 요청을 보내는 문제를 막습니다. |
