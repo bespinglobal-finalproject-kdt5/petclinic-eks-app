@@ -6,7 +6,7 @@
 
 Warning: **client only**.
 Use the REST API from the backend [spring-petclinic-rest project](https://github.com/spring-petclinic/spring-petclinic-rest).
-Start the backend server before using workflows that call the API. The frontend expects the Spring Petclinic REST API at `http://localhost:9966/petclinic/api/`.
+The browser calls `/petclinic/api/` on the same origin as the UI. Start the backend before using workflows that call the API.
 
 ## Screenshot
 
@@ -26,7 +26,7 @@ For a fresh dependency resolution during maintenance, run `npm install` and comm
 
 ## Development server
 
-Run `npm start` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `npm start` and open `http://localhost:4200/`. The Angular dev server forwards `/petclinic/api/` requests to `http://127.0.0.1:9966`, preserving the path and query string. The app automatically reloads when source files change.
 
 ## Code scaffolding
 
@@ -34,7 +34,7 @@ Run `npm run ng -- generate component component-name` to generate a new componen
 
 ## Build
 
-Run `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory. Use `npm run build -- --configuration production` for a production build.
+Run `npm run build` to build the project. Use `npm run build -- --configuration production` for an optimized production build. The web root is `dist/browser/`.
 
 You can also build the application in a dedicated docker image using the provided `Dockerfile` as follows:
 
@@ -42,11 +42,13 @@ You can also build the application in a dedicated docker image using the provide
 docker build -t spring-petclinic-angular:latest .
 ```
 
-Then you will be able to use it as follows:
+To preview the UI at `http://localhost:8080/`:
 
 ```
-docker run --rm -p 8080:8080 spring-petclinic-angular:latest
+docker run --rm -p 127.0.0.1:8080:8080 spring-petclinic-angular:latest
 ```
+
+The image runs nginx as a non-root user on port 8080. It serves static files and falls back to `index.html` for Angular routes such as `/owners/1`. In production, configure the external ingress to route `/petclinic/api` and its subpaths to the REST backend without rewriting them, and `/` to this frontend. Requests to the API namespace that reach the frontend return 404; the standalone image does not proxy them.
 
 ## Documentation
 
@@ -58,92 +60,6 @@ Regenerate the `docs` folder with [compodoc](https://compodoc.app):
 ```
 npx @compodoc/compodoc@2.0.0 -p tsconfig.doc.json -d docs
 ```
-
-## Deploy on Web servers
-
-### Deploy on Nginx (for Nginx CentOS installation):
-
-1. Build Angular application:
-
-  ng build --prod --base-href=/petclinic/ --deploy-url=/petclinic/
-
-2. Create sub-directory **/petclinic** in default nginx directory **/usr/share/nginx/html**
-
-3. Copy **/dist**  sub-directory from Angular appication to  **/usr/share/nginx/html/petclinic**
-
-4. Edit nginx config (nginx.conf file in /etc/nginx/ directory)
-
-```
-server {
-	listen       80 default_server;
-        root         /usr/share/nginx/html;
-        index index.html;
-
-	location /petclinic/ {
-                alias /usr/share/nginx/html/petclinic/dist/;
-                try_files $uri$args $uri$args/ /petclinic/index.html;
-        }
-}
-```
-
-5. Reload nginx:  **nginx -s reload**
-
-6. Run app in brouser:  http://server_name/petclinic/
-
-### Deploy on Apache (for Apache CentOS installation):
-
-1. Build Angular application:
-
-ng build --prod --base-href=/petclinic/ --deploy-url=/petclinic/
-
-2. Create sub-directory **/petclinic** in default Apache directory **/var/www/html**
-
-3. Go into Angular appication **/dist** sub-directory and copy all files and sub-dirs from it to **/var/www/html/petclinic**
-
-4. Edit Apache config (/etc/https/conf/httpd.conf):
-
-sudo vi /etc/httpd/conf/httpd.conf
-
-Find the Directory /var/www/html> section and change the AllowOverride directive from None to All:
-```
- /etc/httpd/conf/httpd.conf
- . . .
-  <Directory /var/www/html>
- . . .
- # 
- # AllowOverride controls what directives may be placed in .htaccess files.
- # It can be "All", "None", or any combination of the keywords:
- # Options FileInfo AuthConfig Limit
- #
- AllowOverride All
- . . .
- </Directory>
- . . .
-```
-5. Save and exit the file and then restart Apache to apply the change:
-
-sudo systemctl restart httpd
-
-6. Create a .htaccess file in the directory **/var/www/html/petclinic**
-
-sudo vi /var/www/html/petclinic/.htaccess
-
-Add the following line to the top of the file to activate the RewriteEngine, which instructs Apache to process any rules that follow:
-```
-RewriteEngine On  
-# If an existing asset or directory is requested go to it as it is
-RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]  
-RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d  
-RewriteRule ^ - [L]
-
-# If the requested resource doesn't exist, use index.html
-RewriteRule ^ index.html  
-```
-7. Reload Apache:
-
-sudo systemctl restart httpd
-
-8. Run app in browser: http://server_name/petclinic/
 
 ## Running unit tests
 
