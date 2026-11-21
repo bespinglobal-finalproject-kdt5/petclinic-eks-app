@@ -70,8 +70,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "buildTarget": "spring-petclinic-angular:build",
-            "proxyConfig": "proxy.conf.json"
+            "buildTarget": "spring-petclinic-angular:build"
           },
           "configurations": {
             "production": {

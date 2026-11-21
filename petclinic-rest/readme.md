@@ -18,8 +18,6 @@ The [spring-petclinic-angular project](https://github.com/spring-petclinic/sprin
 
 ## Running Petclinic locally
 
-In this local project copy, see [the Korean setup guide](../README.md) for running both apps together. The default backend uses in-memory H2. Select `SPRING_PROFILES_ACTIVE=external-postgres` for an existing PostgreSQL database; supply `POSTGRES_URL`, `POSTGRES_USER` and `POSTGRES_PASS`. This profile validates the schema but does not run DDL or sample-data scripts. Probe paths are `/petclinic/actuator/health/liveness` and `/petclinic/actuator/health/readiness`.
-
 ### With Maven command line
 ```sh
 git clone https://github.com/spring-petclinic/spring-petclinic-rest.git

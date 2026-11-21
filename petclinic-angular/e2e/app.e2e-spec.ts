@@ -28,7 +28,7 @@ const vets = [
 ];
 
 async function mockBackend(page: Page) {
-  await page.route('/petclinic/api/**', async route => {
+  await page.route('http://localhost:9966/petclinic/api/**', async route => {
     const url = new URL(route.request().url());
     const resource = url.pathname.replace('/petclinic/api/', '');
 
@@ -105,9 +105,9 @@ test('displays backend data on list pages', async ({ page }) => {
     }
   ];
 
-  await page.route('/petclinic/api/vets', route => route.fulfill({ json: vets }));
-  await page.route('/petclinic/api/pettypes', route => route.fulfill({ json: petTypes }));
-  await page.route('/petclinic/api/specialties', route => route.fulfill({ json: specialties }));
+  await page.route('**/petclinic/api/vets', route => route.fulfill({ json: vets }));
+  await page.route('**/petclinic/api/pettypes', route => route.fulfill({ json: petTypes }));
+  await page.route('**/petclinic/api/specialties', route => route.fulfill({ json: specialties }));
   await page.route(
     url => url.pathname.endsWith('/petclinic/api/owners'),
     (route, request) => {
@@ -119,26 +119,26 @@ test('displays backend data on list pages', async ({ page }) => {
     }
   );
 
-  await page.goto('/vets');
+  await page.goto('/petclinic/vets');
   await expect(page.locator('#vets tbody > tr')).toHaveCount(6);
   await expect(page.locator('#vets')).toContainText('James Carter');
   await expect(page.locator('#vets')).toContainText('radiology');
 
-  await page.goto('/pettypes');
+  await page.goto('/petclinic/pettypes');
   await expect(page.locator('#pettypes tbody > tr')).toHaveCount(6);
   const renderedPetTypes = await page.locator('#pettypes input').evaluateAll(
     inputs => inputs.map(input => (input as HTMLInputElement).value)
   );
   expect(renderedPetTypes).toEqual(expect.arrayContaining(['cat', 'dog']));
 
-  await page.goto('/specialties');
+  await page.goto('/petclinic/specialties');
   await expect(page.locator('#specialties tbody > tr')).toHaveCount(3);
   const renderedSpecialties = await page.locator('#specialties input').evaluateAll(
     inputs => inputs.map(input => (input as HTMLInputElement).value)
   );
   expect(renderedSpecialties).toEqual(expect.arrayContaining(['dentistry', 'surgery']));
 
-  await page.goto('/owners');
+  await page.goto('/petclinic/owners');
   await page.locator('#lastName').fill('Davis');
   await page.getByRole('button', { name: 'Find Owner' }).click();
   await expect(page.getByRole('link', { name: 'Betty Davis' })).toBeVisible();
@@ -152,14 +152,14 @@ test('desktop dropdowns open and navigate to owners and veterinarians', async ({
   const ownersMenu = page.getByRole('button', { name: 'Owners' }).locator('..').locator('.dropdown-menu');
   await expect(ownersMenu).toBeVisible();
   await ownersMenu.getByRole('link', { name: 'Search' }).click();
-  await expect(page).toHaveURL('/owners');
+  await expect(page).toHaveURL(/\/petclinic\/owners$/);
   await expect(page.getByRole('heading', { name: 'Owners' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Veterinarians' }).click();
   const vetsMenu = page.getByRole('button', { name: 'Veterinarians' }).locator('..').locator('.dropdown-menu');
   await expect(vetsMenu).toBeVisible();
   await vetsMenu.getByRole('link', { name: 'All' }).click();
-  await expect(page).toHaveURL('/vets');
+  await expect(page).toHaveURL(/\/petclinic\/vets$/);
   await expect(page.getByRole('heading', { name: 'Veterinarians' })).toBeVisible();
 });
 
@@ -182,7 +182,7 @@ test('mobile navbar toggler expands and collapses the menu', async ({ page }) =>
 });
 
 test('owner form displays Bootstrap invalid state and feedback', async ({ page }) => {
-  await page.goto('/owners/add');
+  await page.goto('/petclinic/owners/add');
 
   const firstName = page.getByLabel('First Name');
   await firstName.fill('123');
@@ -202,9 +202,9 @@ for (const viewport of [
 
     const pages = [
       { path: '/', heading: 'Welcome to Petclinic' },
-      { path: '/owners', heading: 'Owners' },
-      { path: '/owners/1', heading: 'Owner Information' },
-      { path: '/owners/add', heading: 'New Owner' }
+      { path: '/petclinic/owners', heading: 'Owners' },
+      { path: '/petclinic/owners/1', heading: 'Owner Information' },
+      { path: '/petclinic/owners/add', heading: 'New Owner' }
     ];
 
     for (const target of pages) {
